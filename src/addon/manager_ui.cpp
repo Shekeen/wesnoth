@@ -992,7 +992,7 @@ bool addons_manager_ui(display& disp, const std::string& remote_address)
 	bool need_wml_cache_refresh = false;
 	std::string last_addon_id;
 	addons_filter_state filter;
-    static addons_client client(disp);
+	static addons_client client(disp);
 
 	preferences::set_campaign_server(remote_address);
 
@@ -1011,7 +1011,7 @@ bool addons_manager_ui(display& disp, const std::string& remote_address)
 			// TODO: don't create a new client instance each time we return to the UI,
 			// but for that we need to make sure any pending network operations are canceled
 			// whenever addons_client throws user_exit even before it gets destroyed
-            client.connect(remote_address);
+			client.connect(remote_address);
 
 			addons_list addons;
 

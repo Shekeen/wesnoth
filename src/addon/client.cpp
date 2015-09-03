@@ -34,14 +34,14 @@ static lg::log_domain log_addons_client("addons-client");
 #define DBG_ADDONS LOG_STREAM(debug, log_addons_client)
 
 addons_client::addons_client(display& disp)
-    : disp_(disp)
-    , addr_()
-    , host_()
-    , port_()
-    , conn_(NULL)
-    , stat_(NULL)
-    , last_error_()
-    , addon_list_()
+	: disp_(disp)
+	, addr_()
+	, host_()
+	, port_()
+	, conn_(NULL)
+	, stat_(NULL)
+	, last_error_()
+	, addon_list_()
 {}
 
 addons_client::addons_client(display& disp, const std::string& address)
@@ -52,15 +52,15 @@ addons_client::addons_client(display& disp, const std::string& address)
 	, conn_(NULL)
 	, stat_(NULL)
 	, last_error_()
-    , addon_list_()
+	, addon_list_()
 {
-    this->set_address(address);
+	this->set_address(address);
 }
 
 void addons_client::connect()
 {
-    if (this->host_.empty() || this->port_.empty())
-        throw invalid_server_address();
+	if (this->host_.empty() || this->port_.empty())
+		throw invalid_server_address();
 
 	LOG_ADDONS << "connecting to server " << host_ << " on port " << port_ << '\n';
 
@@ -75,36 +75,36 @@ void addons_client::connect()
 
 void addons_client::connect(const std::string& address)
 {
-    if (this->conn_ != NULL && this->addr_ == address)
-        return;
+	if (this->conn_ != NULL && this->addr_ == address)
+		return;
 
-    this->set_address(address);
-    this->connect();
+	this->set_address(address);
+	this->connect();
 }
 
 bool addons_client::refresh_addons_list()
 {
-    config response_buf;
+	config response_buf;
 
-    /** @todo FIXME: get rid of this legacy "campaign"/"campaigns" silliness */
+	/** @todo FIXME: get rid of this legacy "campaign"/"campaigns" silliness */
 
-    this->send_simple_request("request_campaign_list", response_buf);
-    this->wait_for_transfer_done(_("Downloading list of add-ons..."));
+	this->send_simple_request("request_campaign_list", response_buf);
+	this->wait_for_transfer_done(_("Downloading list of add-ons..."));
 
-    this->addon_list_ = response_buf.child("campaigns");
+	this->addon_list_ = response_buf.child("campaigns");
 
-    return !this->update_last_error(response_buf);
+	return !this->update_last_error(response_buf);
 }
 
 bool addons_client::request_addons_list(config& cfg)
 {
-    if (this->addon_list_.empty()) {
-        if (!this->refresh_addons_list())
-            return false;
-    }
+	if (this->addon_list_.empty()) {
+		if (!this->refresh_addons_list())
+			return false;
+	}
 
-    cfg = this->addon_list_;
-    return true;
+	cfg = this->addon_list_;
+	return true;
 }
 
 bool addons_client::request_distribution_terms(std::string& terms)
@@ -305,19 +305,19 @@ void addons_client::check_connected() const
 
 void addons_client::set_address(const std::string& address)
 {
-    this->addr_ = address;
+	this->addr_ = address;
 
-    const std::vector<std::string>& address_components =
-        utils::split(addr_, ':');
+	const std::vector<std::string>& address_components =
+		utils::split(addr_, ':');
 
-    if (address_components.empty()) {
-        throw invalid_server_address();
-    }
+	if (address_components.empty()) {
+		throw invalid_server_address();
+	}
 
-    // FIXME: this parsing will break IPv6 numeric addresses! */
-    host_ = address_components[0];
-    port_ = address_components.size() == 2 ?
-        address_components[1] : str_cast(default_campaignd_port);
+	// FIXME: this parsing will break IPv6 numeric addresses! */
+	host_ = address_components[0];
+	port_ = address_components.size() == 2 ?
+		address_components[1] : str_cast(default_campaignd_port);
 }
 
 void addons_client::send_request(const config& request, config& response)
