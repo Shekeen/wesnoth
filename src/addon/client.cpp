@@ -41,6 +41,7 @@ addons_client::addons_client(display& disp, const std::string& address)
 	, conn_(NULL)
 	, stat_(NULL)
 	, last_error_()
+    , addon_list_()
 {
 	const std::vector<std::string>& address_components =
 		utils::split(addr_, ':');
@@ -68,20 +69,29 @@ void addons_client::connect()
 		vgettext("Connecting to $server_address|...", i18n_symbols));
 }
 
+bool addons_client::refresh_addons_list()
+{
+    config response_buf;
+
+    /** @todo FIXME: get rid of this legacy "campaign"/"campaigns" silliness */
+
+    this->send_simple_request("request_campaign_list", response_buf);
+    this->wait_for_transfer_done(_("Downloading list of add-ons..."));
+
+    this->addon_list_ = response_buf.child("campaigns");
+
+    return !this->update_last_error(response_buf);
+}
+
 bool addons_client::request_addons_list(config& cfg)
 {
-	cfg.clear();
+    if (this->addon_list_.empty()) {
+        if (!this->refresh_addons_list())
+            return false;
+    }
 
-	config response_buf;
-
-	/** @todo FIXME: get rid of this legacy "campaign"/"campaigns" silliness */
-
-	this->send_simple_request("request_campaign_list", response_buf);
-	this->wait_for_transfer_done(_("Downloading list of add-ons..."));
-
-	cfg = response_buf.child("campaigns");
-
-	return !this->update_last_error(response_buf);
+    cfg = this->addon_list_;
+    return true;
 }
 
 bool addons_client::request_distribution_terms(std::string& terms)

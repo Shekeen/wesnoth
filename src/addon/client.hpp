@@ -54,8 +54,17 @@ public:
 	/** Returns the last error message sent by the server, or an empty string. */
 	const std::string& get_last_server_error() const { return last_error_; }
 
+    /**
+     * Download the add-ons list from the server, refreshing the cached copy.
+     *
+     * @return @a true on success, @a false on failure. Retrieve the error message with @a get_last_server_error.
+     */
+    bool refresh_addons_list();
+
 	/**
-	 * Request the add-ons list from the server.
+	 * Request the add-ons list. 
+     * The list is downloaded from the server the first time this method is called, after that the cached copy is returned.
+     * Use @a refresh_addons_list to refresh the cached copy.
 	 *
 	 * @return @a true on success, @a false on failure. Retrieve the error message with @a get_last_server_error.
 	 *
@@ -141,6 +150,7 @@ private:
 	network_asio::connection* conn_;
 	gui2::tnetwork_transmission* stat_;
 	std::string last_error_;
+    config addon_list_;
 
 	/** Makes sure the add-ons server connection is working. */
 	void check_connected() const;
