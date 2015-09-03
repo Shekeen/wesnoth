@@ -36,6 +36,13 @@ public:
 	struct not_connected_to_server {};
 	struct user_exit {};
 
+    /**
+     * Constructor.
+     *
+     * @param disp    Display object on which to display a status dialog.
+     */
+    addons_client(display& disp);
+
 	/**
 	 * Constructor.
 	 *
@@ -50,6 +57,7 @@ public:
 	 * Try to establish a connection to the add-ons server.
 	 */
 	void connect();
+    void connect(const std::string& address);
 
 	/** Returns the last error message sent by the server, or an empty string. */
 	const std::string& get_last_server_error() const { return last_error_; }
@@ -154,6 +162,11 @@ private:
 
 	/** Makes sure the add-ons server connection is working. */
 	void check_connected() const;
+
+    /**
+    * Set add-ons server host address.
+    */
+    void set_address(const std::string& address);
 
 	/**
 	 * Sends a request to the add-ons server.

@@ -33,6 +33,17 @@ static lg::log_domain log_addons_client("addons-client");
 #define LOG_ADDONS LOG_STREAM(info,  log_addons_client)
 #define DBG_ADDONS LOG_STREAM(debug, log_addons_client)
 
+addons_client::addons_client(display& disp)
+    : disp_(disp)
+    , addr_()
+    , host_()
+    , port_()
+    , conn_(NULL)
+    , stat_(NULL)
+    , last_error_()
+    , addon_list_()
+{}
+
 addons_client::addons_client(display& disp, const std::string& address)
 	: disp_(disp)
 	, addr_(address)
@@ -43,21 +54,14 @@ addons_client::addons_client(display& disp, const std::string& address)
 	, last_error_()
     , addon_list_()
 {
-	const std::vector<std::string>& address_components =
-		utils::split(addr_, ':');
-
-	if(address_components.empty()) {
-		throw invalid_server_address();
-	}
-
-	// FIXME: this parsing will break IPv6 numeric addresses! */
-	host_ = address_components[0];
-	port_ = address_components.size() == 2 ?
-		address_components[1] : str_cast(default_campaignd_port);
+    this->set_address(address);
 }
 
 void addons_client::connect()
 {
+    if (this->host_.empty() || this->port_.empty())
+        throw invalid_server_address();
+
 	LOG_ADDONS << "connecting to server " << host_ << " on port " << port_ << '\n';
 
 	utils::string_map i18n_symbols;
@@ -67,6 +71,15 @@ void addons_client::connect()
 
 	this->wait_for_transfer_done(
 		vgettext("Connecting to $server_address|...", i18n_symbols));
+}
+
+void addons_client::connect(const std::string& address)
+{
+    if (this->conn_ != NULL && this->addr_ == address)
+        return;
+
+    this->set_address(address);
+    this->connect();
 }
 
 bool addons_client::refresh_addons_list()
@@ -288,6 +301,23 @@ void addons_client::check_connected() const
 		ERR_ADDONS << "not connected to server" << std::endl;
 		throw not_connected_to_server();
 	}
+}
+
+void addons_client::set_address(const std::string& address)
+{
+    this->addr_ = address;
+
+    const std::vector<std::string>& address_components =
+        utils::split(addr_, ':');
+
+    if (address_components.empty()) {
+        throw invalid_server_address();
+    }
+
+    // FIXME: this parsing will break IPv6 numeric addresses! */
+    host_ = address_components[0];
+    port_ = address_components.size() == 2 ?
+        address_components[1] : str_cast(default_campaignd_port);
 }
 
 void addons_client::send_request(const config& request, config& response)
